@@ -200,6 +200,7 @@ async def add(ctx: Context, name: str, *args: str):
     try:
         data = get_data(ctx)
 
+        # Check if the entry already exists
         if name in data:
             await ctx.send(
                 embed=discord.Embed(
@@ -208,8 +209,10 @@ async def add(ctx: Context, name: str, *args: str):
                 ))
             return
 
+        # Save entry to file
         data[name] = new_entry
         write_data(data, ctx)
+        
         logging.info(f"Successfully saved new entry: {new_entry}")
         await ctx.send(embed=discord.Embed(description="New entry saved!", color=0x00FF00))
     except Exception as e:

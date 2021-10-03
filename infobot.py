@@ -88,10 +88,10 @@ async def send_error(ctx: Context):
     :param ctx: Context
     """
     await ctx.send(
-        embed=discord.Embed(
-            description=f"Something went wrong :(",
-            color=int(get_config("error_color"), 16)))
+        embed=discord.Embed(description=f"Something went wrong! :(", color=ERROR_COLOR))
 
+
+ERROR_COLOR = int(get_config("error_color"), 16)
 
 # Init Logging
 logging.basicConfig(filename=get_config("logfile"), level=logging.DEBUG)
@@ -117,33 +117,30 @@ async def on_ready():
     help="ENTRY FIELD TEXT"
 )
 async def edit(ctx: Context, entry: str, field: str, *args: str):
-    # TODO: Comments
-    if field.lower() == "l" or field.lower() == "location":
-        field = "Location"
-    elif field.lower() == "d" or field.lower() == "direction":
-        field = "Direction"
-    elif field.lower() == "r" or field.lower() == "rates":
-        field = "Rates"
-    elif field.lower() == "i" or field.lower() == "instructions":
-        field = "Instructions"
-    elif field.lower() == "info":
-        field = "Info"
-    elif field.lower() == "img" or field.lower() == "image" or field.lower() == "images":
-        field = "Images"
-    elif field.lower() == "t" or field.lower() == "thumbnail":
-        field = "Thumbnail"
+    """
+    Command edit: Edit a specified field of an existing entry using the given arguments
+    :param ctx: The context of the request
+    :param entry: The name of the entry to be edited
+    :param field: The name of the field to be edited
+    :param args: The new value
+    """
+    
+    # Get correct field key
+    fields = get_fields()
+    for k in fields.keys():
+        if field.lower in fields[k]:
+            field = k
+            break
     else:
-        await ctx.send(embed=discord.Embed(description=f"No field named: {field}", color=0xFF0000))
+        # No match found
+        await ctx.send(embed=discord.Embed(description=f"No field named: {field}", color=ERROR_COLOR))
+        return
 
     try:
         data = get_data(ctx)
 
         if entry not in data:
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {entry}", color=0xFF0000))
-            return
-
-        if field not in data[entry]:
-            await ctx.send(embed=discord.Embed(description=f"No field named: {field}", color=0xFF0000))
+            await ctx.send(embed=discord.Embed(description=f"No entry named: {entry}", color=ERROR_COLOR))
             return
 
         logging.info(f"Editing {entry}: {data[entry]}")
@@ -203,8 +200,7 @@ async def add(ctx: Context, name: str, *args: str):
         else:
             # No match found -> print error message and not create the entry
             logging.info(f"Unknown field name: {cmd}")
-            await ctx.send(embed=discord.Embed(description=f"Unknown field name: {cmd}",
-                                               color=int(get_config("error_color"), 16)))
+            await ctx.send(embed=discord.Embed(description=f"Unknown field name: {cmd}", color=ERROR_COLOR))
             return
     try:
         data = get_data(ctx)
@@ -214,7 +210,7 @@ async def add(ctx: Context, name: str, *args: str):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"The entry {name} already exists! Use `{get_config('prefix')}edit {name}` instead.",
-                    color=int(get_config("error_color"), 16)
+                    color=ERROR_COLOR
                 ))
             return
 
@@ -248,9 +244,7 @@ async def delete(ctx: Context, name: str):
         # Check if the entry exists
         if name not in data:
             await ctx.send(
-                embed=discord.Embed(
-                    description=f"No entry named: {name}",
-                    color=int(get_config("error_color"), 16)))
+                embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
             return
 
         logging.info(f"Deleting the entry: {data[name]}")
@@ -278,7 +272,7 @@ async def search(ctx: Context, name: str):
 
         if name not in data:
             # TODO suggest closest
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=0xFF0000))
+            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
 
         msg = discord.Embed(
             title=name,
@@ -323,7 +317,7 @@ async def search(ctx: Context, name: str):
     help=""
 )
 async def list_all(ctx: Context):
-    # TODO: Comments
+    # TODO: Comments, Implement active status
     try:
         data = get_data(ctx).keys()
 

@@ -229,7 +229,10 @@ async def delete(ctx: Context, name: str):
         data = get_data(ctx)
 
         if name not in data:
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=0xFF0000))
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"No entry named: {name}",
+                    color=int(get_config("error_color"), 16)))
             return
 
         logging.info(f"Deleting the entry: {data[name]}")
@@ -277,7 +280,7 @@ async def search(ctx: Context, name: str):
             msg.add_field(name="Extra Information", value=data[name]["Info"], inline=False)
         await ctx.send(embed=msg)
 
-        for img in data[name]["Images"].split(" "):
+        for img in data[name]["Media"].split(";"):
             if not img:
                 continue
             try:

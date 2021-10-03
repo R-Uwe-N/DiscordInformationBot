@@ -82,6 +82,24 @@ def join_list(alist: list, insert: str) -> str:
     return insert.join(map(str, alist)).strip()
 
 
+def get_status(data: dict, key: str) -> str:
+    """
+    Helper function to parse the status of an entry and return a corresponding emoji
+    :param data: Dict containing multiple entries
+    :param key: Key for the correct entry
+    :return: Emoji corresponding to the status of the given entry
+    """
+    try:
+        status = data[key]["Status"]
+        if status == "on":
+            return "\U0001F7E2"
+        elif status == "off":
+            return "\U0001F534"
+        return "\U000026AA"
+    except KeyError:
+        return ""
+
+
 async def send_error(ctx: Context):
     """
     Helper function to send an error message
@@ -92,6 +110,7 @@ async def send_error(ctx: Context):
 
 
 ERROR_COLOR = int(get_config("error_color"), 16)
+BOT_COLOR = int(get_config("bot_color"), 16)
 
 # Init Logging
 logging.basicConfig(filename=get_config("logfile"), level=logging.DEBUG)
@@ -276,7 +295,7 @@ async def search(ctx: Context, name: str):
 
         msg = discord.Embed(
             title=name,
-            color=0x009999
+            color=BOT_COLOR
         )
         if data[name]["Thumbnail"]:
             msg.set_thumbnail(url=data[name]["Thumbnail"])
@@ -317,18 +336,18 @@ async def search(ctx: Context, name: str):
     help=""
 )
 async def list_all(ctx: Context):
-    # TODO: Comments, Implement active status
+    """
+    Command list: Creates a list of all entry names and displays it
+    :param ctx: Context of the request
+    """
     try:
-        data = get_data(ctx).keys()
+        data = get_data(ctx)
 
-        # Maybe use embeds for each entry to show the thumbnail
-        msg = discord.Embed(
-            title="All locations",
-            color=0x009999,
-            description="\n".join(data)
-        )
+        # Create a list of all locations and their status, then concatenate the list to a single string
+        entry_list = [f"{i}\t{get_status(data, i)}" for i in data.keys()]
+        entry_list = "\n".join(entry_list)
 
-        await ctx.send(embed=msg)
+        await ctx.send(embed=discord.Embed(title="All locations", color=BOT_COLOR, description=entry_list))
 
     except Exception as e:
         logging.error(e)

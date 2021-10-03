@@ -87,7 +87,10 @@ async def send_error(ctx: Context):
     Helper function to send an error message
     :param ctx: Context
     """
-    await ctx.send(embed=discord.Embed(description=f"Something went wrong :(", color=int(get_config("error_color"), 16)))
+    await ctx.send(
+        embed=discord.Embed(
+            description=f"Something went wrong :(",
+            color=int(get_config("error_color"), 16)))
 
 
 # Init Logging
@@ -163,7 +166,13 @@ async def edit(ctx: Context, entry: str, field: str, *args: str):
          "[info EXTRA INFORMATION] $ [t/thumbnail IMAGE_URL] $ [images/video/gallery/link URL; URL; ...]"
 )
 async def add(ctx: Context, name: str, *args: str):
-    # TODO: Comments
+    """
+    Command Add: Creates a new entry with the given parameters and saves it to a file
+    :param ctx: Context of the request
+    :param name: Name of the new entry
+    :param args: Arguments for the new entry
+    """
+
     logging.info(f"Create new entry: {name}")
 
     # Load the possible arguments
@@ -212,7 +221,7 @@ async def add(ctx: Context, name: str, *args: str):
         # Save entry to file
         data[name] = new_entry
         write_data(data, ctx)
-        
+
         logging.info(f"Successfully saved new entry: {new_entry}")
         await ctx.send(embed=discord.Embed(description="New entry saved!", color=0x00FF00))
     except Exception as e:
@@ -227,10 +236,16 @@ async def add(ctx: Context, name: str, *args: str):
     help="NAME"
 )
 async def delete(ctx: Context, name: str):
-    # TODO Comments
+    """
+    Command delete: Removes the entry with the specified name from the stored entries
+    :param ctx: Context of the request
+    :param name: Name of the entry to be deleted
+    """
+
     try:
         data = get_data(ctx)
 
+        # Check if the entry exists
         if name not in data:
             await ctx.send(
                 embed=discord.Embed(
@@ -240,6 +255,7 @@ async def delete(ctx: Context, name: str):
 
         logging.info(f"Deleting the entry: {data[name]}")
 
+        # Delete the entry from the dict and save the dict to the file
         del data[name]
         write_data(data, ctx)
 

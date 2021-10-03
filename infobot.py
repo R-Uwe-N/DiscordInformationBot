@@ -170,7 +170,7 @@ async def edit(ctx: Context, entry: str, field: str, *args: str):
     # Get correct field key
     fields = get_fields()
     for k in fields.keys():
-        if field.lower in fields[k]:
+        if field.lower() in [x.lower() for x in fields[k]]:
             field = k
             break
     else:
@@ -308,11 +308,17 @@ async def delete(ctx: Context, name: str):
     help="NAME"
 )
 async def search(ctx: Context, name: str):
-    # TODO: Comments
+    """
+    Command search: Searches for an entry and displays it's information. In case no match is found some suggestions are
+    displayed
+    :param ctx: Context of the request
+    :param name: Name of the entry to be found
+    """
     try:
         data = get_data(ctx)
 
         if name not in data:
+            # Suggest some other entries that are similar to the searched name
             suggestions = get_closest(data.keys(), name, 3)
             msg = join_list(suggestions, "\n-")
             await ctx.send(embed=discord.Embed(title=f"No entry named: {name}",
@@ -324,32 +330,47 @@ async def search(ctx: Context, name: str):
             title=name,
             color=BOT_COLOR
         )
+
+        # Set default fields
         if data[name]["Thumbnail"]:
             msg.set_thumbnail(url=data[name]["Thumbnail"])
 
         if data[name]["Location"]:
-            msg.add_field(name="Location", value=data[name]["Location"], inline=True)
+            msg.add_field(name="Location", value=data[name]["Location"], inline=False)
         if data[name]["Direction"]:
-            msg.add_field(name="Piston bolt directions", value=data[name]["Direction"], inline=True)
+            msg.add_field(name="Piston bolt directions", value=data[name]["Direction"], inline=False)
         if data[name]["Rates"]:
-            msg.add_field(name="Rates", value=data[name]["Rates"], inline=True)
+            msg.add_field(name="Rates", value=data[name]["Rates"], inline=False)
         if data[name]["Instructions"]:
             msg.add_field(name="Instructions", value=data[name]["Instructions"], inline=False)
         if data[name]["Info"]:
             msg.add_field(name="Extra Information", value=data[name]["Info"], inline=False)
-        await ctx.send(embed=msg)
 
-        for img in data[name]["Media"].split(";"):
-            if not img:
-                continue
+        # Set any additional field
+        fields = get_fields()
+        for k in fields:
+            # Filter out the default fields
+            if k not in ["Thumbnail", "Location", "Direction", "Rates", "Instructions", "Info", "Media", "Status"]:
+                if data[name][k]:
+                    msg.add_field(name=k, value=data[name][k], inline=False)
+
+        if data[name]["Media"]:
+            media = data[name]["Media"].split(";")
             try:
-                # m = discord.Embed(description=img)
-                # m.set_image(url=img)
-                # await ctx.send(embed=m)
-                await ctx.send(img)
+                m = ""
+                for x in media:
+                    x = x.split(" ")
+                    if len(x) > 2 or len(x) < 1:
+                        continue
+                    elif len(x) == 1:
+                        m += f"{x}\t"
+                    else:
+                        m += f"[{x[0].strip()}]({x[1].strip()})\t"
+                msg.add_field(name="Media", value=m, inline=False)
             except Exception as e:
                 logging.error(e)
-                await ctx.send(embed=discord.Embed(description=f"Bad Link! {img}", color=0xFF0000))
+
+        await ctx.send(embed=msg)
 
     except Exception as e:
         logging.error(e)

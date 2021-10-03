@@ -130,4 +130,4 @@ dmypy.json
 
 
 #Token file
-token
+*.tk

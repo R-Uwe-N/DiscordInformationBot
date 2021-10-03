@@ -8,6 +8,12 @@ from discord.ext.commands.context import Context
 
 
 def get_config(name: str) -> str:
+    """
+    Read a parameter from the config file
+    :param name: parameter_name
+    :return: value of the parameter
+    """
+
     with open("config.json", "r") as config_file:
         data = json.load(config_file)
 
@@ -15,12 +21,20 @@ def get_config(name: str) -> str:
 
 
 def get_data(ctx: Context) -> dict:
+    """
+    Get all data corresponding to the context
+    :param ctx: Context
+    :return: Stored data
+    """
+
     path = f"{get_config('savepath')}{ctx.guild}.log"
     if os.path.isfile(path):
         with open(path, "r") as data_file:
             data = json.load(data_file)
 
         return data
+
+    # Create the save-file of it does not exist
     with open(path, "w+") as _:
         pass
 
@@ -28,34 +42,57 @@ def get_data(ctx: Context) -> dict:
 
 
 def write_data(data: dict, ctx: Context):
+    """
+    Write data to the save-file corresponding to the context
+    :param data: data to be saved
+    :param ctx: context
+    """
+
     with open(f"{get_config('savepath')}{ctx.guild}.log", "w+") as data_file:
         json.dump(data, data_file)
 
 
 def tuple_to_string(tup: tuple) -> str:
+    """
+    Helper function to convert a tuple to a string
+    :param tup: Tuple containing information
+    :return: Concatenated string
+    """
     return " ".join(map(str, tup))
 
 
-def join_args(alist: list) -> str:
-    return "=".join(map(str, alist)).strip()
+def join_list(alist: list, insert: str) -> str:
+    """
+    Helper function to concatenate a list
+    :param alist: List containing strings
+    :param insert: Insert between each string of the list
+    :return: Concatenated string
+    """
+    return insert.join(map(str, alist)).strip()
 
 
 async def send_error(ctx: Context):
-    await ctx.send(embed=discord.Embed(description=f"Something went wrong! :(", color=0xFF0000))
+    """
+    Helper function to send an error message
+    :param ctx: Context
+    """
+    await ctx.send(embed=discord.Embed(description=f"Something went wrong :(", color=int(get_config("error_color"), 16)))
 
 
+# Init Logging
 logging.basicConfig(filename=get_config("logfile"), level=logging.DEBUG)
 
-with open("token", "r") as file:
+with open(get_config("token_file"), "r") as file:
     token = file.read()
 
-client = commands.Bot(
-    command_prefix=get_config("prefix")
-)
+client = commands.Bot(command_prefix=get_config("prefix"))
 
 
 @client.event
 async def on_ready():
+    """
+    Function will be executed once the bot is logged in
+    """
     logging.info("Successfully logged in.")
     print("Logged in!")
 
@@ -124,7 +161,7 @@ async def add(ctx: Context, name: str, *args: str):
     for arg in args:
         cmd, *param = arg.split("=")
         cmd = cmd.lower().strip()
-        param = join_args(param).strip()
+        param = join_list(param, "=").strip()
 
         if cmd == "location" or cmd == "l":
             new_entry["Location"] = param

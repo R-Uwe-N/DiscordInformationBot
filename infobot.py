@@ -355,16 +355,16 @@ async def search(ctx: Context, name: str):
                     msg.add_field(name=k, value=data[name][k], inline=False)
 
         if data[name]["Media"]:
-            media = data[name]["Media"].split(";")
+            media = data[name]["Media"].split(";")  # Get individual urls
             try:
                 m = ""
                 for x in media:
-                    x = x.split(" ")
-                    if len(x) > 2 or len(x) < 1:
+                    x = x.split(" ")  # Split Link name and url
+                    if len(x) > 2 or len(x) < 1:  # Filter out invalid format
                         continue
-                    elif len(x) == 1:
+                    elif len(x) == 1:  # Only url with no name
                         m += f"{x}\t"
-                    else:
+                    else:  # Format url with the name: [name](url)
                         m += f"[{x[0].strip()}]({x[1].strip()})\t"
                 msg.add_field(name="Media", value=m, inline=False)
             except Exception as e:

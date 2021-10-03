@@ -1,0 +1,9 @@
+{
+  "Location": ["location", "l"],
+  "Direction": ["direction", "d", "dir"],
+  "Rates": ["rates", "r"],
+  "Instructions": ["instructions", "i"],
+  "Info": ["info"],
+  "Media": ["image", "images", "video", "link", "img", "vid", "gallery", "media"],
+  "Thumbnail": ["thumbnail", "t"]
+}

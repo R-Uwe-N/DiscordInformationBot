@@ -20,6 +20,17 @@ def get_config(name: str) -> str:
     return data[name]
 
 
+def get_fields() -> dict:
+    """
+    Function to load and return the fields-config-file
+    """
+
+    with open("input_fields.json", "r") as json_file:
+        data = json.load(json_file)
+
+    return data
+
+
 def get_data(ctx: Context) -> dict:
     """
     Get all data corresponding to the context
@@ -27,7 +38,7 @@ def get_data(ctx: Context) -> dict:
     :return: Stored data
     """
 
-    path = f"{get_config('savepath')}{ctx.guild}.log"
+    path = f"{get_config('savepath')}{ctx.guild}.json"
     if os.path.isfile(path):
         with open(path, "r") as data_file:
             data = json.load(data_file)
@@ -35,8 +46,8 @@ def get_data(ctx: Context) -> dict:
         return data
 
     # Create the save-file of it does not exist
-    with open(path, "w+") as _:
-        pass
+    with open(path, "w+") as save_file:
+        json.dump(dict(), save_file)
 
     return {}
 
@@ -48,7 +59,7 @@ def write_data(data: dict, ctx: Context):
     :param ctx: context
     """
 
-    with open(f"{get_config('savepath')}{ctx.guild}.log", "w+") as data_file:
+    with open(f"{get_config('savepath')}{ctx.guild}.json", "w+") as data_file:
         json.dump(data, data_file)
 
 
@@ -139,79 +150,70 @@ async def edit(ctx: Context, entry: str, field: str, *args: str):
 
         logging.info(f"Successfully edited entry {entry}: {data[entry]}")
         await ctx.send(embed=discord.Embed(description=f"Successfully updated the entry: {entry}", color=0x00FF00))
-    except:
+    except Exception as e:
+        logging.error(e)
         await send_error(ctx)
 
 
 @client.command(
     name="add",
-    aliases=["new"],
+    aliases=["new", "create"],
     description="Add a new entry",
     help="NAME [l/location LOCATION] $ [d/direction DIRECTION] $ [r/rates RATES] $ [i/instructions INSTRUCTIONS] $ "
-         "[info EXTRA INFORMATION] $ [t/thumbnail IMAGE_URL] $ [img/images IMAGE_URLS]"
+         "[info EXTRA INFORMATION] $ [t/thumbnail IMAGE_URL] $ [images/video/gallery/link URL; URL; ...]"
 )
 async def add(ctx: Context, name: str, *args: str):
     # TODO: Comments
     logging.info(f"Create new entry: {name}")
-    new_entry = {"Location": "", "Direction": "", "Rates": "", "Instructions": "", "Info": "", "Images": "",
-                 "Thumbnail": ""}
+
+    # Load the possible arguments
+    fields = get_fields()
+
+    # Get the keys from the json_file and create a new dict
+    new_entry = dict.fromkeys(fields.keys(), "")
 
     args = tuple_to_string(args).split("$")
 
     for arg in args:
+        # Parse argument ot get the command and the corresponding parameter
         cmd, *param = arg.split("=")
         cmd = cmd.lower().strip()
-        param = join_list(param, "=").strip()
+        param = join_list(param, "=").strip()  # rejoin the parameter list to make it possible to have = contained
 
-        if cmd == "location" or cmd == "l":
-            new_entry["Location"] = param
-            logging.info(f"Set location field to: {param}")
+        # Create the entry also if no parameters are given
+        if cmd == "":
+            continue
 
-        elif cmd == "direction" or cmd == "d":
-            new_entry["Direction"] = param
-            logging.info(f"Set direction field to: {param}")
-
-        elif cmd == "rates" or cmd == "r":
-            new_entry["Rates"] = param
-            logging.info(f"Set rates field to: {param}")
-
-        elif cmd == "instructions" or cmd == "i":
-            new_entry["Instructions"] = param
-            logging.info(f"Set instructions field to: {param}")
-
-        elif cmd == "info":
-            new_entry["Info"] = param
-            logging.info(f"Set info field to: {param}")
-
-        elif cmd == "images" or cmd == "img" or cmd == "image":
-            new_entry["Images"] = param
-            logging.info(f"Set images field to: {param}")
-
-        elif cmd == "thumbnail" or cmd == "t":
-            new_entry["Images"] = param
-            logging.info(f"Set images field to: {param}")
-
-        elif cmd == "":
-            break
-
+        # Iterate over the possible fields
+        for k in fields.keys():
+            # Check if the cmd is valid
+            if cmd in fields[k]:
+                new_entry[k] = param
+                logging.info(f"Set {k} field to: {param}")
+                break
         else:
+            # No match found -> print error message and not create the entry
             logging.info(f"Unknown field name: {cmd}")
-            await ctx.send(embed=discord.Embed(description=f"Unknown field name: {cmd}", color=0xFF0000))
+            await ctx.send(embed=discord.Embed(description=f"Unknown field name: {cmd}",
+                                               color=int(get_config("error_color"), 16)))
             return
     try:
         data = get_data(ctx)
 
         if name in data:
-            await ctx.send(embed=discord.Embed(description=f"The entry {name} already exists! Use "
-                                                           f"`{get_config('prefix')}edit {name}` instead.",
-                                               color=0xFF0000))
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"The entry {name} already exists! Use `{get_config('prefix')}edit {name}` instead.",
+                    color=int(get_config("error_color"), 16)
+                ))
             return
 
         data[name] = new_entry
         write_data(data, ctx)
         logging.info(f"Successfully saved new entry: {new_entry}")
         await ctx.send(embed=discord.Embed(description="New entry saved!", color=0x00FF00))
-    except:
+    except Exception as e:
+        logging.error(e)
         await send_error(ctx)
 
 
@@ -236,7 +238,8 @@ async def delete(ctx: Context, name: str):
         write_data(data, ctx)
 
         await ctx.send(embed=discord.Embed(description=f"Successfully removed the entry: {name}", color=0x00FF00))
-    except:
+    except Exception as e:
+        logging.error(e)
         await send_error(ctx)
 
 
@@ -282,10 +285,12 @@ async def search(ctx: Context, name: str):
                 # m.set_image(url=img)
                 # await ctx.send(embed=m)
                 await ctx.send(img)
-            except:
+            except Exception as e:
+                logging.error(e)
                 await ctx.send(embed=discord.Embed(description=f"Bad Link! {img}", color=0xFF0000))
 
-    except:
+    except Exception as e:
+        logging.error(e)
         await send_error(ctx)
 
 
@@ -309,7 +314,8 @@ async def list_all(ctx: Context):
 
         await ctx.send(embed=msg)
 
-    except:
+    except Exception as e:
+        logging.error(e)
         await send_error(ctx)
 
 client.run(token)

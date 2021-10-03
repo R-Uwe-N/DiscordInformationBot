@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+from difflib import SequenceMatcher
 from discord.ext import commands
 from discord.ext.commands.context import Context
 
@@ -98,6 +99,28 @@ def get_status(data: dict, key: str) -> str:
         return "\U000026AA"
     except KeyError:
         return ""
+
+
+def get_closest(data: list, pattern: str, num=3) -> list:
+    """
+    Helper function to find the closest matches to the given pattern in data
+
+    :param data: list containing strings for comparison
+    :param pattern: Pattern to be matched
+    :param num: Amount of matches returned
+    return list of the closest matches to the pattern in data
+    """
+    results = []
+    for d in data:
+        p = SequenceMatcher(d, pattern).ratio()
+        results.append([p, d])
+
+    results.sort(key=lambda x: x[0])
+
+    if len(results) <= num:
+        return [i[1] for i in results]
+
+    return [results[i][1] for i in range(num)]
 
 
 async def send_error(ctx: Context):
@@ -290,8 +313,12 @@ async def search(ctx: Context, name: str):
         data = get_data(ctx)
 
         if name not in data:
-            # TODO suggest closest
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
+            suggestions = get_closest(data.keys(), name, 3)
+            msg = join_list(suggestions, "\n-")
+            await ctx.send(embed=discord.Embed(title=f"No entry named: {name}",
+                           description=f"Maybe one of those is what you look for:\n-{msg}", color=0xBBBB00))
+
+            return
 
         msg = discord.Embed(
             title=name,
@@ -345,7 +372,7 @@ async def list_all(ctx: Context):
 
         # Create a list of all locations and their status, then concatenate the list to a single string
         entry_list = [f"{i}\t{get_status(data, i)}" for i in data.keys()]
-        entry_list = "\n".join(entry_list)
+        entry_list = join_list(entry_list, "\n")
 
         await ctx.send(embed=discord.Embed(title="All locations", color=BOT_COLOR, description=entry_list))
 

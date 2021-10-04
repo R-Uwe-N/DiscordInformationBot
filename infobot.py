@@ -451,8 +451,37 @@ async def media_add(ctx: Context, name: str, display: str, url: str):
     help=""
 )
 async def status(ctx: Context, name: str):
-    # TODO implement, comments, docstring
-    pass
+    """"
+    Function to get and display the status of an entry
+    :param ctx: Context of the request
+    :param name: Name of the entry
+    """
+    try:
+        data = get_data(ctx)
+
+        # Check if the entry exists
+        if name not in data:
+            await send_not_found(ctx, name)
+            return
+
+        # Get status emoji
+        state = get_status(data, name)
+
+        # Construct message
+        msg = f"{state} {name}'s is currently "
+
+        if state == "\U0001F7E2":
+            msg += "active!"
+        elif state == "\U0001F534":
+            msg += "inactive!"
+        else:
+            msg += "undefined!"
+
+        await ctx.send(embed=discord.Embed(description=msg, color=BOT_COLOR))
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
 
 
 @client.command(

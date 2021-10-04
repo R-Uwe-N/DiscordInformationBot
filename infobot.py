@@ -408,18 +408,18 @@ async def list_all(ctx: Context):
     description="Adds an URL to the Media field",
     help=""
 )
-async def media_add(ctx: Context):
+async def media_add(ctx: Context, name: str, display: str, url: str):
     # TODO implement, comments, docstring
     pass
 
 
 @client.command(
     name="status",
-    aliases=["state", "active"],
+    aliases=["state"],
     description="Get information what the status of an entry is",
     help=""
 )
-async def status(ctx: Context):
+async def status(ctx: Context, name: str):
     # TODO implement, comments, docstring
     pass
 
@@ -431,6 +431,39 @@ async def status(ctx: Context):
     help=""
 )
 async def undo(ctx: Context):
+    # TODO implement, comments, docstring
+    pass
+
+
+@client.command(
+    name="on",
+    aliases=["activate", "active"],
+    description="Set the state of an entry to active",
+    help=""
+)
+async def on(ctx: Context, name: str):
+    # TODO implement, comments, docstring
+    pass
+
+
+@client.command(
+    name="off",
+    aliases=["inactivate", "inactive"],
+    description="Set the state of an entry to inactive",
+    help=""
+)
+async def off(ctx: Context, name: str):
+    # TODO implement, comments, docstring
+    pass
+
+
+@client.command(
+    name="del_status",
+    aliases=["delete_status", "rm_status", "remove_status", "no_status"],
+    description="Removes the status of an entry",
+    help=""
+)
+async def del_status(ctx: Context, name: str):
     # TODO implement, comments, docstring
     pass
 

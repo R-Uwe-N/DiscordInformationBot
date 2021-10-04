@@ -209,14 +209,16 @@ async def on_ready():
     logging.info("Successfully logged in.")
     print("Logged in!")
 
+    # Set status message to show the help command
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening,
                                                            name=f" {get_config('prefix')}help"))
 
 
 @client.command(
     name="edit",
-    description="Edit a specific field of an existing entry",
-    help="ENTRY FIELD TEXT"
+    description=f"Using this command allows for editing one field for the specified entry. Possible fields are:\n"
+                f"{'; '.join(['|'.join(j for j in get_fields()[i]) for i in list(get_fields())[:-1]])}",
+    help="Edit a specified field of an existing entry"
 )
 async def edit(ctx: Context, entry: str, field: str, *args: str):
     """
@@ -275,9 +277,10 @@ async def edit_error(ctx: Context, error):
 @client.command(
     name="add",
     aliases=["new", "create"],
-    description="Add a new entry",
-    help="NAME [l/location LOCATION] $ [d/direction DIRECTION] $ [r/rates RATES] $ [i/instructions INSTRUCTIONS] $ "
-         "[info EXTRA INFORMATION] $ [t/thumbnail IMAGE_URL] $ [images/video/gallery/link URL; URL; ...]"
+    description=f"Creating new entries with the option of setting the values of specified fields. "
+                f"Usage to add fields:\n"
+                f"{' $ '.join(['|'.join(j for j in get_fields()[i]) + f' {i.upper()}' for i in list(get_fields())[:-1]])}",
+    help="Add a new entry"
 )
 async def add(ctx: Context, name: str, *args: str):
     """
@@ -360,8 +363,8 @@ async def add_error(ctx: Context, error):
 @client.command(
     name="delete",
     aliases=["remove"],
-    description="Remove an existing entry",
-    help="NAME"
+    description="This command allows to delete the specified entry entirely",
+    help="Remove an existing entry"
 )
 async def delete(ctx: Context, name: str):
     """
@@ -407,8 +410,9 @@ async def delete_error(ctx: Context, error):
 @client.command(
     name="info",
     aliases=["search", "get"],
-    description="Search for an entry to display information",
-    help="NAME"
+    description="Given the name all entries are searched for a match. If a match is found its information is "
+                "displayed, otherwise a small number of similarly named entries are suggested",
+    help="Search for an entry and display its information"
 )
 async def search(ctx: Context, name: str):
     """
@@ -443,7 +447,7 @@ async def search(ctx: Context, name: str):
             msg.add_field(name="Status", value=f"{state} Currently active!", inline=False)
         if state == INACTIVE_EMOJI:
             msg.add_field(name="Status", value=f"{state} Currently inactive!", inline=False)
-        
+
         if data[name]["Location"]:
             msg.add_field(name="Location", value=data[name]["Location"], inline=False)
         if data[name]["Direction"]:
@@ -504,8 +508,8 @@ async def search_error(ctx: Context, error):
 @client.command(
     name="list",
     aliases=["all"],
-    description="List the names of all entries",
-    help=""
+    description="List the names of all entries and their status",
+    help="List the names of all entries"
 )
 async def list_all(ctx: Context):
     """
@@ -529,8 +533,9 @@ async def list_all(ctx: Context):
 @client.command(
     name="media_add",
     aliases=["image_add", "add_media", "add_image", "add_link", "link_add"],
-    description="Adds an URL to the Media field",
-    help=""
+    description="This commands allows to add links to an entry. <display> defines the text which will be displayed as "
+                "a hyperlink",
+    help="Adds an URL to the Media field"
 )
 async def media_add(ctx: Context, name: str, display: str, url: str):
     """
@@ -576,8 +581,8 @@ async def media_add_error(ctx: Context, error):
 @client.command(
     name="status",
     aliases=["state"],
-    description="Get information what the status of an entry is",
-    help=""
+    description="Display the current status of the specified entry",
+    help="Get status of an entry is"
 )
 async def status(ctx: Context, name: str):
     """"
@@ -630,8 +635,9 @@ async def status_error(ctx: Context, error):
 @client.command(
     name="undo",
     aliases=["redo", "revert"],
-    description="Undo the last change made. Note: Only the very last change is revertible",
-    help=""
+    description="Undo the last change made. Note: Only the very last change is revertible. Executing this command twice"
+                " results in a redo.",
+    help="Undo the last change made"
 )
 async def undo(ctx: Context):
     """
@@ -657,8 +663,8 @@ async def undo(ctx: Context):
 @client.command(
     name="on",
     aliases=["activate", "active"],
-    description="Set the state of an entry to active",
-    help=""
+    description="Set the status of an entry to active",
+    help="Set the status of an entry to active"
 )
 async def on(ctx: Context, name: str):
     """
@@ -695,8 +701,8 @@ async def on_error(ctx: Context, error):
 @client.command(
     name="off",
     aliases=["inactivate", "inactive"],
-    description="Set the state of an entry to inactive",
-    help=""
+    description="Set the status of an entry to inactive",
+    help="Set the status of an entry to inactive"
 )
 async def off(ctx: Context, name: str):
     """
@@ -734,8 +740,8 @@ async def off_error(ctx: Context, error):
 @client.command(
     name="no_status",
     aliases=["delete_status", "rm_status", "remove_status", "del_status"],
-    description="Removes the status of an entry",
-    help=""
+    description="Removes the status of an entry. Note this is different to the 'off' command!",
+    help="Removes the status of an entry"
 )
 async def del_status(ctx: Context, name: str):
     """

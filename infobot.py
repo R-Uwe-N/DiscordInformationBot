@@ -423,7 +423,7 @@ async def list_all(ctx: Context):
         data = get_data(ctx)
 
         # Create a list of all locations and their status, then concatenate the list to a single string
-        entry_list = [f"{i}\t{get_status(data, i)}" for i in data.keys()]
+        entry_list = [f"{get_status(data, i)}\t{i}" for i in data.keys()]
         entry_list = join_list(entry_list, "\n")
 
         await ctx.send(embed=discord.Embed(title="All locations", color=BOT_COLOR, description=entry_list))
@@ -468,7 +468,7 @@ async def status(ctx: Context, name: str):
         state = get_status(data, name)
 
         # Construct message
-        msg = f"{state} {name}'s is currently "
+        msg = f"{state} {name}'s status is currently "
 
         if state == "\U0001F7E2":
             msg += "active!"

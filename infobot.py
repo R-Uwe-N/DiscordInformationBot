@@ -522,8 +522,21 @@ async def off(ctx: Context, name: str):
     help=""
 )
 async def del_status(ctx: Context, name: str):
-    # TODO implement, comments, docstring
-    pass
+    """
+    Command del_status: Removes the status of an entry
+    :param ctx: Context of the request
+    :param name: Name of the entry to be changed
+    """
+    try:
+        if not set_status(ctx, name, ""):
+            await send_not_found(ctx, name)
+            return
+
+        await ctx.send(embed=discord.Embed(description=f"Successfully removed the status of {name}.", color=0x00FF00))
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
 
 
 client.run(token)

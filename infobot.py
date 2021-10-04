@@ -285,8 +285,7 @@ async def delete(ctx: Context, name: str):
 
         # Check if the entry exists
         if name not in data:
-            await ctx.send(
-                embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
+            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
             return
 
         logging.info(f"Deleting the entry: {data[name]}")
@@ -442,8 +441,27 @@ async def undo(ctx: Context):
     help=""
 )
 async def on(ctx: Context, name: str):
-    # TODO implement, comments, docstring
-    pass
+    """
+    Command on: Sets the status of the specified entry to on/active
+    :param ctx: Context of the request
+    :param name: Name of the entry to be changed
+    """
+    try:
+        data = get_data(ctx)
+
+        # Check if the specified entry exists
+        if name not in data:
+            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
+            return
+
+        # Set status and save to file
+        data[name]["Status"] = "on"
+
+        write_data(data, ctx)
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
 
 
 @client.command(

@@ -3,6 +3,8 @@ import json
 import logging
 import os
 
+import discord.ext.commands.errors as errors
+
 from difflib import SequenceMatcher
 from discord.ext import commands
 from discord.ext.commands.context import Context
@@ -390,13 +392,14 @@ async def search(ctx: Context, name: str):
             try:
                 m = ""
                 for x in media:
-                    x = x.split(" ")  # Split Link name and url
-                    if len(x) > 2 or len(x) < 1:  # Filter out invalid format
-                        continue
-                    elif len(x) == 1:  # Only url with no name
-                        m += f"{x}\t"
-                    else:  # Format url with the name: [name](url)
-                        m += f"[{x[0].strip()}]({x[1].strip()})\t"
+                    if x:
+                        x = x.strip().split(" ")  # Split Link name and url
+                        if len(x) > 2 or len(x) < 1:  # Filter out invalid format
+                            continue
+                        elif len(x) == 1:  # Only url with no name
+                            m += f"{x}\t"
+                        else:  # Format url with the name: [name](url)
+                            m += f"[{x[0].strip()}]({x[1].strip()})\t"
                 msg.add_field(name="Media", value=m, inline=False)
             except Exception as e:
                 logging.error(e)
@@ -440,8 +443,45 @@ async def list_all(ctx: Context):
     help=""
 )
 async def media_add(ctx: Context, name: str, display: str, url: str):
-    # TODO implement, comments, docstring
-    pass
+    """
+    Command media_add: Adds an url and a display name to an entry
+    :param ctx: Context of the request
+    :param name: Name of the entry
+    :param display: String which will be displayed as a link
+    :param url: link to the media
+    """
+    try:
+        data = get_data(ctx)
+
+        if name not in data:
+            await send_not_found(ctx, name)
+
+        # Add new link to the end of existing media
+        data[name]["Media"] += f";{display} {url}"
+
+        write_data(data, ctx)
+
+        await ctx.send(embed=discord.Embed(description=f"Successfully added link to {name}", color=0x00FF00))
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
+
+
+@media_add.error
+async def media_add_error(ctx: Context, error):
+    """
+    Error handling for function media_add
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}media_add ENTRY_NAME LINK_NAME URL",
+            color=ERROR_COLOR))
+
+    else:
+        await send_error(ctx)
 
 
 @client.command(

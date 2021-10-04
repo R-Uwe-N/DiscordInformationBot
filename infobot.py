@@ -10,6 +10,11 @@ from discord.ext import commands
 from discord.ext.commands.context import Context
 
 
+ACTIVE_EMOJI = "\U0001F7E2"
+INACTIVE_EMOJI = "\U0001F534"
+UNDEF_STATE_EMOJI = "\U000026AA"
+
+
 def get_config(name: str) -> str:
     """
     Read a parameter from the config file
@@ -112,9 +117,9 @@ def get_status(data: dict, key: str) -> str:
     try:
         stat = data[key]["Status"]
         if stat == "on":
-            return "\U0001F7E2"
+            return ACTIVE_EMOJI
         elif stat == "off":
-            return "\U0001F534"
+            return INACTIVE_EMOJI
         return "\U000026AA"
     except KeyError:
         return ""
@@ -433,6 +438,12 @@ async def search(ctx: Context, name: str):
         if data[name]["Thumbnail"]:
             msg.set_thumbnail(url=data[name]["Thumbnail"])
 
+        state = get_status(data, name)
+        if state == ACTIVE_EMOJI:
+            msg.add_field(name="Status", value=f"{state} Currently active!", inline=False)
+        if state == INACTIVE_EMOJI:
+            msg.add_field(name="Status", value=f"{state} Currently inactive!", inline=False)
+        
         if data[name]["Location"]:
             msg.add_field(name="Location", value=data[name]["Location"], inline=False)
         if data[name]["Direction"]:
@@ -588,9 +599,9 @@ async def status(ctx: Context, name: str):
         # Construct message
         msg = f"{state} {name}'s status is currently "
 
-        if state == "\U0001F7E2":
+        if state == ACTIVE_EMOJI:
             msg += "active!"
-        elif state == "\U0001F534":
+        elif state == INACTIVE_EMOJI:
             msg += "inactive!"
         else:
             msg += "undefined!"

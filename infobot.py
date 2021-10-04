@@ -231,6 +231,21 @@ async def edit(ctx: Context, entry: str, field: str, *args: str):
         await send_error(ctx)
 
 
+@edit.error
+async def edit_error(ctx: Context, error):
+    """
+    Error handling for function edit
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}edit ENTRY_NAME FIELD_NAME VALUE",
+            color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="add",
     aliases=["new", "create"],
@@ -301,6 +316,21 @@ async def add(ctx: Context, name: str, *args: str):
         await send_error(ctx)
 
 
+@add.error
+async def add_error(ctx: Context, error):
+    """
+    Error handling for function add
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}add ENTRY_NAME FIELD=VALUE $ FIELD=VALUE ...",
+            color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="delete",
     aliases=["remove"],
@@ -331,6 +361,20 @@ async def delete(ctx: Context, name: str):
         await ctx.send(embed=discord.Embed(description=f"Successfully removed the entry: {name}", color=0x00FF00))
     except Exception as e:
         logging.error(e)
+        await send_error(ctx)
+
+
+@delete.error
+async def delete_error(ctx: Context, error):
+    """
+    Error handling for function delete
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}delete ENTRY_NAME", color=ERROR_COLOR))
+    else:
         await send_error(ctx)
 
 
@@ -411,6 +455,20 @@ async def search(ctx: Context, name: str):
         await send_error(ctx)
 
 
+@search.error
+async def search_error(ctx: Context, error):
+    """
+    Error handling for function search
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}info ENTRY_NAME", color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="list",
     aliases=["all"],
@@ -479,7 +537,6 @@ async def media_add_error(ctx: Context, error):
         await ctx.send(embed=discord.Embed(
             description=f"Missing argument! Usage: {get_config('prefix')}media_add ENTRY_NAME LINK_NAME URL",
             color=ERROR_COLOR))
-
     else:
         await send_error(ctx)
 
@@ -524,6 +581,20 @@ async def status(ctx: Context, name: str):
         await send_error(ctx)
 
 
+@status.error
+async def status_error(ctx: Context, error):
+    """
+    Error handling for function status
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}status ENTRY_NAME", color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="undo",
     aliases=["redo"],
@@ -559,6 +630,20 @@ async def on(ctx: Context, name: str):
         await send_error(ctx)
 
 
+@on.error
+async def on_error(ctx: Context, error):
+    """
+    Error handling for function on
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}on ENTRY_NAME", color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="off",
     aliases=["inactivate", "inactive"],
@@ -584,6 +669,20 @@ async def off(ctx: Context, name: str):
         await send_error(ctx)
 
 
+@off.error
+async def off_error(ctx: Context, error):
+    """
+    Error handling for function off
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}off ENTRY_NAME", color=ERROR_COLOR))
+    else:
+        await send_error(ctx)
+
+
 @client.command(
     name="del_status",
     aliases=["delete_status", "rm_status", "remove_status", "no_status"],
@@ -605,6 +704,20 @@ async def del_status(ctx: Context, name: str):
 
     except Exception as e:
         logging.error(e)
+        await send_error(ctx)
+
+
+@del_status.error
+async def del_status_error(ctx: Context, error):
+    """
+    Error handling for function del_status
+    :param ctx: Context of the request
+    :param error: Error type
+    """
+    if isinstance(error, errors.MissingRequiredArgument):
+        await ctx.send(embed=discord.Embed(
+            description=f"Missing argument! Usage: {get_config('prefix')}no_status ENTRY_NAME", color=ERROR_COLOR))
+    else:
         await send_error(ctx)
 
 

@@ -75,7 +75,7 @@ def write_data(data: dict, ctx: Context):
     backup_path = f"{get_config('savepath')}{ctx.guild}{ctx.guild.id}.json"
 
     backup = get_data(ctx)
-    
+
     with open(path, "w") as data_file:
         json.dump(data, data_file)
 
@@ -614,13 +614,29 @@ async def status_error(ctx: Context, error):
 
 @client.command(
     name="undo",
-    aliases=["redo"],
+    aliases=["redo", "revert"],
     description="Undo the last change made. Note: Only the very last change is revertible",
     help=""
 )
 async def undo(ctx: Context):
-    # TODO implement, comments, docstring
-    pass
+    """
+    Command undo: Reverts the effect of the last command which has changed data
+    :param ctx: Context of the request
+    """
+    try:
+        # Load the data before the last change
+        backup_data = get_data(ctx, backup=True)
+
+        # Write back the data
+        write_data(backup_data, ctx)
+
+        # Implementation wor write data allows for redo by just executing undo twice
+
+        await ctx.send(embed=discord.Embed(description="Successfully reverted the last command!", color=0x00FF00))
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
 
 
 @client.command(

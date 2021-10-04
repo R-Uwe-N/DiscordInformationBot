@@ -194,6 +194,8 @@ with open(get_config("token_file"), "r") as file:
 client = commands.Bot(command_prefix=get_config("prefix"))
 
 
+# TODO make better help strings
+
 @client.event
 async def on_ready():
     """
@@ -201,7 +203,9 @@ async def on_ready():
     """
     logging.info("Successfully logged in.")
     print("Logged in!")
-    # TODO set status
+
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening,
+                                                           name=f" {get_config('prefix')}help"))
 
 
 @client.command(
@@ -396,8 +400,8 @@ async def delete_error(ctx: Context, error):
 
 
 @client.command(
-    name="search",
-    aliases=["info", "get"],
+    name="info",
+    aliases=["search", "get"],
     description="Search for an entry to display information",
     help="NAME"
 )
@@ -717,8 +721,8 @@ async def off_error(ctx: Context, error):
 
 
 @client.command(
-    name="del_status",
-    aliases=["delete_status", "rm_status", "remove_status", "no_status"],
+    name="no_status",
+    aliases=["delete_status", "rm_status", "remove_status", "del_status"],
     description="Removes the status of an entry",
     help=""
 )

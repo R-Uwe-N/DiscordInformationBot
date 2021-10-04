@@ -34,14 +34,20 @@ def get_fields() -> dict:
     return data
 
 
-def get_data(ctx: Context) -> dict:
+def get_data(ctx: Context, backup=False) -> dict:
     """
     Get all data corresponding to the context
-    :param ctx: Context
+    :param ctx: Context of the request
+    :param backup: Defines whether the previous save should be loaded
     :return: Stored data
     """
 
     path = f"{get_config('savepath')}{ctx.guild}.json"
+    backup_path = f"{get_config('savepath')}{ctx.guild}{ctx.guild.id}.json"
+
+    if backup and os.path.isfile(path):
+        path = backup_path
+
     if os.path.isfile(path):
         with open(path, "r") as data_file:
             data = json.load(data_file)
@@ -50,6 +56,9 @@ def get_data(ctx: Context) -> dict:
 
     # Create the save-file of it does not exist
     with open(path, "w+") as save_file:
+        json.dump(dict(), save_file)
+
+    with open(backup_path, "w+") as save_file:
         json.dump(dict(), save_file)
 
     return {}
@@ -62,8 +71,16 @@ def write_data(data: dict, ctx: Context):
     :param ctx: context
     """
 
-    with open(f"{get_config('savepath')}{ctx.guild}.json", "w+") as data_file:
+    path = f"{get_config('savepath')}{ctx.guild}.json"
+    backup_path = f"{get_config('savepath')}{ctx.guild}{ctx.guild.id}.json"
+
+    backup = get_data(ctx)
+    
+    with open(path, "w") as data_file:
         json.dump(data, data_file)
+
+    with open(backup_path, "w") as data_file:
+        json.dump(backup, data_file)
 
 
 def tuple_to_string(tup: tuple) -> str:

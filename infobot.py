@@ -497,8 +497,22 @@ async def on(ctx: Context, name: str):
     help=""
 )
 async def off(ctx: Context, name: str):
-    # TODO implement, comments, docstring
-    pass
+    """
+    Command off: Sets the status of the specified entry to off/inactive
+    :param ctx: Context of the request
+    :param name: Name of the entry to be changed
+    """
+    try:
+        if not set_status(ctx, name, "off"):
+            await send_not_found(ctx, name)
+            return
+
+        await ctx.send(embed=discord.Embed(description=f"Successfully set status of {name} to inactive",
+                                           color=0x00FF00))
+
+    except Exception as e:
+        logging.error(e)
+        await send_error(ctx)
 
 
 @client.command(

@@ -91,10 +91,10 @@ def get_status(data: dict, key: str) -> str:
     :return: Emoji corresponding to the status of the given entry
     """
     try:
-        status = data[key]["Status"]
-        if status == "on":
+        stat = data[key]["Status"]
+        if stat == "on":
             return "\U0001F7E2"
-        elif status == "off":
+        elif stat == "off":
             return "\U0001F534"
         return "\U000026AA"
     except KeyError:
@@ -319,7 +319,7 @@ async def search(ctx: Context, name: str):
 
         if name not in data:
             # Suggest some other entries that are similar to the searched name
-            suggestions = get_closest(data.keys(), name, 3)
+            suggestions = get_closest(list(data.keys()), name, 3)
             msg = join_list(suggestions, "\n-")
             await ctx.send(embed=discord.Embed(title=f"No entry named: {name}",
                            description=f"Maybe one of those is what you look for:\n-{msg}", color=0xBBBB00))
@@ -331,7 +331,7 @@ async def search(ctx: Context, name: str):
             color=BOT_COLOR
         )
 
-        # Set default fields
+        # Set default fields if they have a value
         if data[name]["Thumbnail"]:
             msg.set_thumbnail(url=data[name]["Thumbnail"])
 
@@ -400,5 +400,39 @@ async def list_all(ctx: Context):
     except Exception as e:
         logging.error(e)
         await send_error(ctx)
+
+
+@client.command(
+    name="media_add",
+    aliases=["image_add", "add_media", "add_image", "add_link", "link_add"],
+    description="Adds an URL to the Media field",
+    help=""
+)
+async def media_add(ctx: Context):
+    # TODO implement, comments, docstring
+    pass
+
+
+@client.command(
+    name="status",
+    aliases=["state", "active"],
+    description="Get information what the status of an entry is",
+    help=""
+)
+async def status(ctx: Context):
+    # TODO implement, comments, docstring
+    pass
+
+
+@client.command(
+    name="undo",
+    aliases=["redo"],
+    description="Undo the last change made. Note: Only the very last change is revertible",
+    help=""
+)
+async def undo(ctx: Context):
+    # TODO implement, comments, docstring
+    pass
+
 
 client.run(token)

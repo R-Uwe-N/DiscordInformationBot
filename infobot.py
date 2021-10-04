@@ -101,6 +101,28 @@ def get_status(data: dict, key: str) -> str:
         return ""
 
 
+def set_status(ctx: Context, name: str, new_status: str) -> bool:
+    """
+    Helper function to set the status of an entry
+    :param ctx: Context of the request
+    :param name: Name of the entry to be changed
+    :param new_status: New status of the entry
+    :return: Whether the change was successful or not
+    """
+
+    data = get_data(ctx)
+
+    # Check if the specified entry exists
+    if name not in data:
+        return False
+
+    # Set status and save to file
+    data[name]["Status"] = new_status
+
+    write_data(data, ctx)
+    return True
+
+
 def get_closest(data: list, pattern: str, num=3) -> list:
     """
     Helper function to find the closest matches to the given pattern in data
@@ -132,6 +154,15 @@ async def send_error(ctx: Context):
         embed=discord.Embed(description=f"Something went wrong! :(", color=ERROR_COLOR))
 
 
+async def send_not_found(ctx: Context, value: str):
+    """
+    Helper function to send a not found message
+    :param ctx: Context of the request
+    :param value: The thing which did not get found
+    """
+    await ctx.send(embed=discord.Embed(description=f"No entry named: {value}", color=ERROR_COLOR))
+
+
 ERROR_COLOR = int(get_config("error_color"), 16)
 BOT_COLOR = int(get_config("bot_color"), 16)
 
@@ -151,6 +182,7 @@ async def on_ready():
     """
     logging.info("Successfully logged in.")
     print("Logged in!")
+    # TODO set status
 
 
 @client.command(
@@ -182,7 +214,7 @@ async def edit(ctx: Context, entry: str, field: str, *args: str):
         data = get_data(ctx)
 
         if entry not in data:
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {entry}", color=ERROR_COLOR))
+            await send_not_found(ctx, entry)
             return
 
         logging.info(f"Editing {entry}: {data[entry]}")
@@ -285,7 +317,7 @@ async def delete(ctx: Context, name: str):
 
         # Check if the entry exists
         if name not in data:
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
+            await send_not_found(ctx, name)
             return
 
         logging.info(f"Deleting the entry: {data[name]}")
@@ -447,17 +479,11 @@ async def on(ctx: Context, name: str):
     :param name: Name of the entry to be changed
     """
     try:
-        data = get_data(ctx)
-
-        # Check if the specified entry exists
-        if name not in data:
-            await ctx.send(embed=discord.Embed(description=f"No entry named: {name}", color=ERROR_COLOR))
+        if not set_status(ctx, name, "on"):
+            await send_not_found(ctx, name)
             return
 
-        # Set status and save to file
-        data[name]["Status"] = "on"
-
-        write_data(data, ctx)
+        await ctx.send(embed=discord.Embed(description=f"Successfully set status of {name} to active", color=0x00FF00))
 
     except Exception as e:
         logging.error(e)

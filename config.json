@@ -1,7 +1,7 @@
 {
-  "token_file": "token.tk",
-  "prefix": "!",
-  "logfile": "bot.log",
+  "token_file": "token1.tk",
+  "prefix": "?",
+  "logfile": "server_test.log",
   "savepath": "data/",
   "error_color": "FF0000",
   "bot_color": "009999"

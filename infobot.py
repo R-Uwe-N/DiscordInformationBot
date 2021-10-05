@@ -10,11 +10,6 @@ from discord.ext import commands
 from discord.ext.commands.context import Context
 
 
-ACTIVE_EMOJI = "\U0001F7E2"
-INACTIVE_EMOJI = "\U0001F534"
-UNDEF_STATE_EMOJI = "\U000026AA"
-
-
 def get_config(name: str) -> str:
     """
     Read a parameter from the config file
@@ -26,6 +21,21 @@ def get_config(name: str) -> str:
         data = json.load(config_file)
 
     return data[name]
+
+
+ACTIVE_EMOJI = "\U0001F7E2"
+INACTIVE_EMOJI = "\U0001F534"
+UNDEF_STATE_EMOJI = "\U000026AA"
+ERROR_COLOR = int(get_config("error_color"), 16)
+BOT_COLOR = int(get_config("bot_color"), 16)
+
+# Init Logging
+logging.basicConfig(filename=get_config("logfile"), level=logging.INFO)
+
+with open(get_config("token_file"), "r") as file:
+    token = file.read()
+
+client = commands.Bot(command_prefix=get_config("prefix"))
 
 
 def get_fields() -> dict:
@@ -185,18 +195,6 @@ async def send_not_found(ctx: Context, value: str):
     :param value: The thing which did not get found
     """
     await ctx.send(embed=discord.Embed(description=f"No entry named: {value}", color=ERROR_COLOR))
-
-
-ERROR_COLOR = int(get_config("error_color"), 16)
-BOT_COLOR = int(get_config("bot_color"), 16)
-
-# Init Logging
-logging.basicConfig(filename=get_config("logfile"), level=logging.DEBUG)
-
-with open(get_config("token_file"), "r") as file:
-    token = file.read()
-
-client = commands.Bot(command_prefix=get_config("prefix"))
 
 
 @client.event

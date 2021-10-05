@@ -131,6 +131,7 @@ dmypy.json
 
 #Token file
 token.tk
+*.tk
 
 #Data
 data/
